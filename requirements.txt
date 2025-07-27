@@ -1,0 +1,8 @@
+streamlit==1.45.0
+streamlit-antd-components==0.3.2
+streamlit-card==1.0.2
+streamlit-agraph==0.0.45
+pandas==2.2.3
+pillow==11.2.1
+plotly==6.0.1
+openpyxl==3.1.5
