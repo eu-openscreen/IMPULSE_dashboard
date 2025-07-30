@@ -1,14 +1,15 @@
 """Display Page for OpenScreen Impulse"""
 
-import streamlit as st
-from PIL import Image
+import re
+
 import pandas as pd
+
 #import matplotlib.pyplot as plt
 import plotly.express as px
-from streamlit_agraph import agraph, Node, Edge, Config
-import re
 import plotly.graph_objects as go
-
+import streamlit as st
+from PIL import Image
+from streamlit_agraph import Config, Edge, Node, agraph
 
 st.set_page_config(
     layout="wide",
@@ -40,7 +41,7 @@ st.markdown(
     "<h2 style='text-align: center; color: #1B3C67;'> European Infrastructure of Open Screening Platforms for Chemical Biology </h2> <br>",
     unsafe_allow_html=True,
 )
-bg_image = Image.open("data/openscreen_impulse_background.png")
+bg_image = Image.open("images/pages/openscreen_impulse_background.png")
 resized_bg = bg_image.resize((1800, 300))
 st.image(resized_bg, use_container_width=True)
 
