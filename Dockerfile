@@ -1,5 +1,5 @@
 # Select base image (can be ubuntu, python, shiny etc)
-FROM python:3.12
+FROM python:3.12-slim-bookworm
 
 # Create user name and home directory variables. 
 # The variables are later used as $USER and $HOME. 
