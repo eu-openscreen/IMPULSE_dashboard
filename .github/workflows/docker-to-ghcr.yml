@@ -1,4 +1,4 @@
-name: Create and publish a Docker image to ghcr.io
+name: Build and publish Docker image for main branch
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.actor }}/impulse
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push-image:
@@ -25,7 +25,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }} 
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -33,7 +33,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value={{date 'YYYYMMDD-HHmmss' tz='Europe/Stockholm'}}
+            type=raw,value=main-{{date 'YYYYMMDD-HHmmss' tz='Europe/Stockholm'}}
+          labels: |
+            org.opencontainers.image.source=${{ github.repository }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
