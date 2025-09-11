@@ -80,9 +80,10 @@ st.markdown(
 
 # st.write(df)
 
-tab1, tab2, tab3 = st.tabs(
+tab1, tab2, tab3, tab4 = st.tabs(
     [
         "Cataloging Screening",
+        "Screening Types",
         "KG overview",
         "Data standard heatmap"
     ]
@@ -222,6 +223,144 @@ with tab1:
 
 with tab2:
 
+    st.header("Overview of screening types", divider="gray")
+
+    df = pd.read_csv('data/Cataloguing screening.csv')
+
+    df = df.loc[df['Type'].notna()]
+
+    screening_types = sorted(df["Type"].unique())
+    selected_screening_type = st.selectbox("Select a screening type", screening_types, key='screening_overview')
+
+    filtered_df = df[df["Type"] == selected_screening_type]
+
+    screen_counts = filtered_df["Site"].value_counts().to_frame().reset_index()
+
+    col = st.columns(2, gap="large")
+    with col[0]:
+        fig = px.pie(
+            values=screen_counts["count"],
+            names=screen_counts["Site"],
+            title=f"Partner institutes for {selected_screening_type}",
+            labels={"names": "Partner Institute", "values": "Number of screens"},
+        )
+
+        fig.update_traces(
+            hovertemplate="<b>%{label}</b><br>Number of screens: %{value}<extra></extra>"
+        )
+        st.plotly_chart(fig)
+
+    with col[1]:
+        st.write("**Details of partner institutes**")
+        
+        viz_option = st.radio(
+            "Choose a visualization type:",
+            ["Chart View", "Table View"],
+            horizontal=True,
+            key='partner_viz_option'
+        )
+        
+        if viz_option == "Chart View":            
+            treemap_data = []
+            for _, row in filtered_df.iterrows():
+                treemap_data.append({
+                    'Site': row['Site'],
+                    'Model_organism': row['Model organism'],
+                    'Cell_type': row['Cell type'],
+                    'Assay_format': row['Assay format'],
+                    'Count': 1
+                })
+            
+            treemap_df = pd.DataFrame(treemap_data)
+            
+            fig_treemap = px.treemap(
+                treemap_df,
+                path=[px.Constant("All Partners"), 'Site', 'Model_organism', 'Cell_type', 'Assay_format'],
+                values='Count',
+                color='Site',
+                title=f'Treemap of Screening Details for {selected_screening_type}',
+                color_discrete_sequence=px.colors.qualitative.Set2,
+                height=500
+            )
+            
+            fig_treemap.update_traces(
+                hovertemplate='<b>%{label}</b><br>Path: %{currentPath}<br><extra></extra>',
+                textinfo="label+value",
+                textfont_size=12,
+                textfont_color="white",
+                marker=dict(
+                    line=dict(width=2, color="white"),
+                    colorscale='viridis'
+                )
+            )
+            
+            fig_treemap.update_layout(
+                font=dict(family="Arial, sans-serif", size=12, color="#2F3E46"),
+                paper_bgcolor="white",
+                plot_bgcolor="white",
+                title=dict(
+                    font=dict(size=16, color="#2F3E46"),
+                    x=0.5,
+                    xanchor='center'
+                )
+            )
+            
+            st.plotly_chart(fig_treemap, use_container_width=True)
+            
+            
+        else:
+            st.dataframe(filtered_df[['Site','Model organism','Cell type','Assay format']], use_container_width=True, hide_index=True)
+
+    st.subheader("Overview of screening details")
+
+    df = filtered_df[['Site','Model organism','Cell type','Assay format']]
+
+    df_cols = sorted(['Model organism','Cell type','Assay format'])
+    selected_column = st.selectbox("Select an attribute", df_cols, key='screening_attribute')
+
+    type_counts = df[selected_column].value_counts().reset_index()
+    type_counts.columns = [selected_column, 'Count']
+
+    fig1 = px.bar(type_counts,
+        x=selected_column,
+        y='Count',
+        title=f'Number of {selected_column.lower()}s for {selected_screening_type}',
+        labels={'Count': f'Number of {selected_column.lower()}s', selected_column: selected_column},
+        text='Count',
+        height=600)
+
+    fig1.update_traces(textposition='outside')
+    fig1.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', xaxis_tickangle=-45)
+
+    st.plotly_chart(fig1, use_container_width=True)
+
+    grouped = df.groupby(['Site', selected_column]).size().reset_index(name='count')
+
+    fig2 = px.bar(grouped,
+        x='Site',
+        y='count',
+        color=selected_column,
+        barmode='group',
+        title=f'{selected_column} Distribution per Partner Institute',
+        labels={'count': f'Number of {selected_column}s', 'Site': 'Partner Institute', selected_column: selected_column})
+
+    fig2.update_layout(xaxis_tickangle=-45)
+
+    st.plotly_chart(fig2, use_container_width=True)
+
+    total_counts = df[selected_column].value_counts().reset_index()
+    total_counts.columns = [selected_column, 'count']
+
+    fig = px.pie(total_counts, 
+                values='count', 
+                names=selected_column, 
+                title=f'Overall {selected_column} Distribution for {selected_screening_type}',
+                hole=0.3)
+
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab3:
+
     # Set Page Configuration
     #st.set_page_config(layout="wide")
 
@@ -352,7 +491,7 @@ with tab2:
     # Display the graph
     agraph(nodes=nodes, edges=edges, config=config)
 
-with tab3:
+with tab4:
 
     #st.header('Heatmap of IMPULSE survey')
 
