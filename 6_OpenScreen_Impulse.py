@@ -1,6 +1,7 @@
 """Display Page for OpenScreen Impulse"""
 
 import re
+import json
 
 import pandas as pd
 
@@ -9,6 +10,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from PIL import Image
+from urllib.request import urlopen
+
 from streamlit_agraph import Config, Edge, Node, agraph
 
 st.set_page_config(
@@ -80,6 +83,64 @@ st.markdown(
 
 # st.write(df)
 
+
+############################### PARTNERS AND SITES MAP START #######################################
+st.markdown("### Partners and Sites Location")
+with urlopen(
+    "https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson"
+) as response:
+    counties = json.load(response)  # GeoJSON counties
+
+excel_data = pd.read_excel(
+    "/home/operation/testing_dstoolkit/IMPULSE_dashboard/data/IMPULSE_WP3-T3.4_catalogue_08072025_v2.xlsx",
+    sheet_name="Catalogue_Models (251216)"
+)
+excel_data = excel_data.dropna(subset=["Partner Site Name", "Partner Site Country"])
+
+map_data = (
+    excel_data.groupby("Partner Site Country")["Partner Site Name"]
+    .agg(
+        **{
+            "Partner counts": "nunique",
+            "Site Names": lambda x: "<br>• " + "<br>• ".join(sorted(x.unique())),
+        }
+    )
+    .reset_index()
+    .rename(columns={"Partner Site Country": "Location"})
+)
+
+fig = px.choropleth_mapbox(
+    map_data,
+    geojson=counties,
+    locations="Location",
+    color="Location",
+    color_discrete_sequence=px.colors.qualitative.Set2,
+    mapbox_style="open-street-map",
+    zoom=3,
+    center={"lat": 51.0057, "lon": 13.7274},
+    opacity=0.7,
+    featureidkey="properties.ISO2",
+    custom_data=["Location", "Partner counts", "Site Names"],
+)
+fig.update_traces(
+    hovertemplate=(
+        "<b>Country: %{customdata[0]}</b><br>"
+        "<b>Total Partner Sites: %{customdata[1]}</b>"
+        "%{customdata[2]}"
+        "<extra></extra>"
+    )
+)
+fig.update_layout(
+    margin={"r": 0, "t": 0, "l": 0, "b": 0},
+    showlegend=False,
+)
+
+# _, col_map, _ = st.columns([1, 2, 2])
+# with col_map:
+    # st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
+############################### PARTNERS AND SITES MAP END #######################################
+
 tab1, tab2, tab3, tab4 = st.tabs(
     [
         "Cataloging Screening",
@@ -97,11 +158,9 @@ with tab1:
 
     df = df.loc[df['Type'].notna()]
 
-    # Create a dropdown menu for institute selection
     institutes = sorted(df["Site"].unique())
     selected_institute = st.selectbox("Select a partner institute", institutes,key='overview')
 
-    # Filter the dataframe based on the selected institute
     filtered_df = df[df["Site"] == selected_institute]
 
     #st.dataframe(filtered_df)
@@ -179,35 +238,35 @@ with tab1:
 
     # Assuming df is already loaded with your data that has a 'Type' column
 
-    type_counts = df[selected_column].value_counts().reset_index()
-    type_counts.columns = [selected_column, 'Count']
+    # type_counts = df[selected_column].value_counts().reset_index()
+    # type_counts.columns = [selected_column, 'Count']
 
-    fig1 = px.bar(type_counts,
-        x=selected_column,
-        y='Count',
-        title=f'Number of {selected_column.lower()}s per screening',
-        labels={'Count': f'Number of {selected_column.lower()}s', 'Type': 'Screening Type'},
-        text='Count',
-        height=600)
+    # fig1 = px.bar(type_counts,
+    #     x=selected_column,
+    #     y='Count',
+    #     title=f'Number of {selected_column.lower()}s per screening',
+    #     labels={'Count': f'Number of {selected_column.lower()}s', 'Type': 'Screening Type'},
+    #     text='Count',
+    #     height=600)
 
-    fig1.update_traces(textposition='outside')
-    fig1.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', xaxis_tickangle=-45)
+    # fig1.update_traces(textposition='outside')
+    # fig1.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', xaxis_tickangle=-45)
 
-    st.plotly_chart(fig1, use_container_width=True)
+    # st.plotly_chart(fig1, use_container_width=True)
 
-    grouped = df.groupby(['Type', selected_column]).size().reset_index(name='count')
+    # grouped = df.groupby(['Type', selected_column]).size().reset_index(name='count')
 
-    fig2 = px.bar(grouped,
-        x='Type',
-        y='count',
-        color=selected_column,
-        barmode='group',
-        title=f'{selected_column} Distribution per Type',
-        labels={'count': f'Number of {selected_column}s', 'Type': 'Type', selected_column: selected_column})
+    # fig2 = px.bar(grouped,
+    #     x='Type',
+    #     y='count',
+    #     color=selected_column,
+    #     barmode='group',
+    #     title=f'{selected_column} Distribution per Type',
+    #     labels={'count': f'Number of {selected_column}s', 'Type': 'Type', selected_column: selected_column})
 
-    fig2.update_layout(xaxis_tickangle=-45)
+    # fig2.update_layout(xaxis_tickangle=-45)
 
-    st.plotly_chart(fig2, use_container_width=True)
+    # st.plotly_chart(fig2, use_container_width=True)
 
 
     total_counts = df[selected_column].value_counts().reset_index()
@@ -321,32 +380,32 @@ with tab2:
     type_counts = df[selected_column].value_counts().reset_index()
     type_counts.columns = [selected_column, 'Count']
 
-    fig1 = px.bar(type_counts,
-        x=selected_column,
-        y='Count',
-        title=f'Number of {selected_column.lower()}s for {selected_screening_type}',
-        labels={'Count': f'Number of {selected_column.lower()}s', selected_column: selected_column},
-        text='Count',
-        height=600)
+    # fig1 = px.bar(type_counts,
+    #     x=selected_column,
+    #     y='Count',
+    #     title=f'Number of {selected_column.lower()}s for {selected_screening_type}',
+    #     labels={'Count': f'Number of {selected_column.lower()}s', selected_column: selected_column},
+    #     text='Count',
+    #     height=600)
 
-    fig1.update_traces(textposition='outside')
-    fig1.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', xaxis_tickangle=-45)
+    # fig1.update_traces(textposition='outside')
+    # fig1.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', xaxis_tickangle=-45)
 
-    st.plotly_chart(fig1, use_container_width=True)
+    # st.plotly_chart(fig1, use_container_width=True)
 
-    grouped = df.groupby(['Site', selected_column]).size().reset_index(name='count')
+    # grouped = df.groupby(['Site', selected_column]).size().reset_index(name='count')
 
-    fig2 = px.bar(grouped,
-        x='Site',
-        y='count',
-        color=selected_column,
-        barmode='group',
-        title=f'{selected_column} Distribution per Partner Institute',
-        labels={'count': f'Number of {selected_column}s', 'Site': 'Partner Institute', selected_column: selected_column})
+    # fig2 = px.bar(grouped,
+    #     x='Site',
+    #     y='count',
+    #     color=selected_column,
+    #     barmode='group',
+    #     title=f'{selected_column} Distribution per Partner Institute',
+    #     labels={'count': f'Number of {selected_column}s', 'Site': 'Partner Institute', selected_column: selected_column})
 
-    fig2.update_layout(xaxis_tickangle=-45)
+    # fig2.update_layout(xaxis_tickangle=-45)
 
-    st.plotly_chart(fig2, use_container_width=True)
+    # st.plotly_chart(fig2, use_container_width=True)
 
     total_counts = df[selected_column].value_counts().reset_index()
     total_counts.columns = [selected_column, 'count']
