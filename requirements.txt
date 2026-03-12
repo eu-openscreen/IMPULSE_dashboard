@@ -23,7 +23,7 @@ pillow==11.3.0
 plotly==6.2.0
 protobuf==6.31.1
 pyarrow==21.0.0
-pycountry==26.0.1
+pycountry==26.2.16
 pydeck==0.9.1
 pyparsing==3.2.3
 python-dateutil==2.9.0.post0
