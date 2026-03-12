@@ -901,7 +901,7 @@ FodyWeavers.xsd
 # PyPi file
 .pypirc
 
-*.json
-*.csv
-*.ipynb
+#*.json
+#*.csv
+#*.ipynb
 !diseaseAssociatedDrugs.csv
