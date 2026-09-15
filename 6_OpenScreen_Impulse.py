@@ -107,9 +107,9 @@ _search_df = _search_df.loc[_search_df["Type"].notna()]
 _search_cols = [
     "Site",
     "Type",
-    "Model organism",
-    "Cell type",
-    "Assay format",
+    "Model Organism",
+    "Biological System",
+    "Assay Design (1)",
 ]
 
 
@@ -208,7 +208,7 @@ tab1, tab2, tab3, tab4 = st.tabs(
     [
         "Cataloging Screening",
         "Screening Types",
-        "Disease Areas",
+        "Primary Disease Areas",
         "Data Standard Heatmap",
     ]
 )
@@ -229,7 +229,7 @@ with tab1:
 
     # st.dataframe(filtered_df)
 
-    # st.dataframe(filtered_df[['Type','Model organism','Cell type','Assay format']], use_container_width=True, hide_index=True)
+    # st.dataframe(filtered_df[['Type','Model Organism','Biological System','Assay Design (1)']], use_container_width=True, hide_index=True)
 
     screen_counts = filtered_df["Type"].value_counts().to_frame().reset_index()
 
@@ -251,9 +251,9 @@ with tab1:
 
     with col[1]:
         st.write("**Details of screening types**")
-        #        st.dataframe(filtered_df[['Type','Model organism','Cell type','Assay format']], use_container_width=True, hide_index=True)
+        #        st.dataframe(filtered_df[['Type','Model Organism','Biological System','Assay Design (1)']], use_container_width=True, hide_index=True)
         _display_df = filtered_df[
-            ["Type", "Model organism", "Cell type", "Assay format"]
+            ["Type", "Model Organism", "Biological System", "Assay Design (1)"]
         ]
         st.dataframe(_display_df, use_container_width=True, hide_index=True)
         # st.write("**Need to contact the partner?**")
@@ -268,7 +268,7 @@ with tab1:
 
     st.subheader("Overview of screening details")
 
-    # pivot = df.groupby(['Site', 'Assay format']).size().unstack(fill_value=0)
+    # pivot = df.groupby(['Site', 'Assay Design (1)']).size().unstack(fill_value=0)
 
     # # Create the matplotlib figure and axis
     # fig, ax = plt.subplots(figsize=(12, 6))
@@ -277,7 +277,7 @@ with tab1:
     # plt.xlabel('Site')
     # plt.ylabel('Number of Experiments')
     # plt.xticks(rotation=45)
-    # plt.legend(title='Assay format')
+    # plt.legend(title='Assay Design (1)')
     # plt.tight_layout()
 
     # st.pyplot(fig)
@@ -285,9 +285,20 @@ with tab1:
     # For example:
     # df = pd.read_csv("your_data.csv")
 
-    df = filtered_df[["Type", "Model organism", "Cell type", "Assay format"]]
 
-    df_cols = sorted(["Model organism", "Cell type", "Assay format"])
+#     [
+#     "Site",
+#     "Type",
+#     "Model Organism",
+#     "Biological System",
+#     "Assay Design (1)",
+# ]
+
+
+
+    df = filtered_df[["Type", "Model Organism", "Biological System", "Assay Design (1)"]]
+
+    df_cols = sorted(["Model Organism", "Biological System", "Assay Design (1)"])
     # st.write(temp_col)
 
     # break
@@ -384,9 +395,9 @@ with tab2:
                 treemap_data.append(
                     {
                         "Site": row["Site"],
-                        "Model_organism": row["Model organism"],
-                        "Cell_type": row["Cell type"],
-                        "Assay_format": row["Assay format"],
+                        "Model_organism": row["Model Organism"],
+                        "Cell_type": row["Biological System"],
+                        "Assay_format": row["Assay Design (1)"],
                         "Count": 1,
                     }
                 )
@@ -433,18 +444,18 @@ with tab2:
             _display_df2 = filtered_df[
                 [
                     "Site",
-                    "Model organism",
-                    "Cell type",
-                    "Assay format",
+                    "Model Organism",
+                    "Biological System",
+                    "Assay Design (1)",
                 ]
             ]
             st.dataframe(_display_df2, use_container_width=True, hide_index=True)
 
     st.subheader("Overview of screening details")
 
-    df = filtered_df[["Site", "Model organism", "Cell type", "Assay format"]]
+    df = filtered_df[["Site", "Model Organism", "Biological System", "Assay Design (1)"]]
 
-    df_cols = sorted(["Model organism", "Cell type", "Assay format"])
+    df_cols = sorted(["Model Organism", "Biological System", "Assay Design (1)"])
     selected_column = st.selectbox(
         "Select an attribute", df_cols, key="screening_attribute"
     )
@@ -502,16 +513,16 @@ with tab2:
 
 #     df = df.loc[df["Type"].notna()]
 
-#     cols = ["Site", "Type", "Model organism", "Cell type", "Assay format"]
+#     cols = ["Site", "Type", "Model Organism", "Biological System", "Assay Design (1)"]
 
 #     df = df[cols]
 
 #     mappings = {
 #         "Site": "red",
 #         "Type": "blue",
-#         "Model organism": "cyan",
-#         "Cell type": "green",
-#         "Assay format": "purple",
+#         "Model Organism": "cyan",
+#         "Biological System": "green",
+#         "Assay Design (1)": "purple",
 #     }
 
 #     nodes_2, edges_2 = [], []
@@ -530,9 +541,9 @@ with tab2:
 
 #     for _, row in df.iterrows():
 #         _add_edge(row["Site"], row["Type"])
-#         _add_edge(row["Type"], row["Assay format"])
-#         _add_edge(row["Assay format"], row["Cell type"])
-#         _add_edge(row["Cell type"], row["Model organism"])
+#         _add_edge(row["Type"], row["Assay Design (1)"])
+#         _add_edge(row["Assay Design (1)"], row["Biological System"])
+#         _add_edge(row["Biological System"], row["Model Organism"])
 
 #     config = Config(
 #         width=1500,
@@ -583,10 +594,10 @@ with tab2:
 
 #     for _, row in filtered_df.iterrows():
 #         _add_edge_p(row["Site"], "Site", row["Type"], "Type")
-#         _add_edge_p(row["Type"], "Type", row["Assay format"], "Assay format")
-#         _add_edge_p(row["Assay format"], "Assay format", row["Cell type"], "Cell type")
+#         _add_edge_p(row["Type"], "Type", row["Assay Design (1)"], "Assay Design (1)")
+#         _add_edge_p(row["Assay Design (1)"], "Assay Design (1)", row["Biological System"], "Biological System")
 #         _add_edge_p(
-#             row["Cell type"], "Cell type", row["Model organism"], "Model organism"
+#             row["Biological System"], "Biological System", row["Model Organism"], "Model Organism"
 #         )
 
 #     config = Config(
@@ -616,14 +627,14 @@ with tab2:
 #     agraph(nodes=nodes, edges=edges, config=config)
 
 with tab3:
-    st.header("Disease Area Overview", divider="gray")
+    st.header("Primary Disease Area Overview", divider="gray")
 
     df_disease = pd.read_csv("data/Cataloguing screening_v2.csv")
     df_disease = df_disease.loc[df_disease["Type"].notna()]
-    df_disease["Disease Area"] = df_disease["Disease Area"].str.strip()
-    df_disease = df_disease.dropna(subset=["Disease Area"])
+    df_disease["Primary Disease Area"] = df_disease["Primary Disease Area"].str.strip()
+    df_disease = df_disease.dropna(subset=["Primary Disease Area"])
 
-    disease_areas = sorted(df_disease["Disease Area"].unique())
+    disease_areas = sorted(df_disease["Primary Disease Area"].unique())
     renamed_diseases = {
         "Infectious": "Infectious Diseases",
         "Metabolic": "Metabolic Disorders",
@@ -633,9 +644,9 @@ with tab3:
         "Select a disease area", disease_areas, key="disease_area_select"
     )
 
-    filtered_disease = df_disease[df_disease["Disease Area"] == selected_disease].copy()
+    filtered_disease = df_disease[df_disease["Primary Disease Area"] == selected_disease].copy()
 
-    # st.subheader(f"Partners & Screening Types for {selected_disease} Disease Area")
+    # st.subheader(f"Partners & Screening Types for {selected_disease} Primary Disease Area")
 
     col1, col2 = st.columns(2, gap="large")
 
@@ -644,7 +655,7 @@ with tab3:
         for _, row in filtered_disease.iterrows():
             treemap_partners.append(
                 {
-                    "Disease Area": row["Disease Area"],
+                    "Primary Disease Area": row["Primary Disease Area"],
                     "Site": row["Site"],
                     "Type": row["Type"],
                     "Count": 1,
@@ -657,7 +668,7 @@ with tab3:
             path=[px.Constant(selected_disease), "Site", "Type"],
             values="Count",
             color="Site",
-            title=f"Partners & Screening Types for {selected_disease} Disease Area",
+            title=f"Partners & Screening Types for {selected_disease} Primary Disease Area",
             color_discrete_sequence=px.colors.qualitative.Set2,
             height=500,
         )
@@ -674,10 +685,10 @@ with tab3:
         for _, row in filtered_disease.iterrows():
             treemap_assay.append(
                 {
-                    "Disease Area": row["Disease Area"],
-                    "Model organism": row["Model organism"],
-                    "Cell type": row["Cell type"],
-                    "Assay format": row["Assay format"],
+                    "Primary Disease Area": row["Primary Disease Area"],
+                    "Model Organism": row["Model Organism"],
+                    "Biological System": row["Biological System"],
+                    "Assay Design (1)": row["Assay Design (1)"],
                     "Count": 1,
                 }
             )
@@ -687,13 +698,13 @@ with tab3:
             treemap_assay_df,
             path=[
                 px.Constant(selected_disease),
-                "Model organism",
-                "Cell type",
-                "Assay format",
+                "Model Organism",
+                "Biological System",
+                "Assay Design (1)",
             ],
             values="Count",
-            color="Model organism",
-            title=f"Model Organisms, Cell Types & Assay Formats for {selected_disease} Disease Area",
+            color="Model Organism",
+            title=f"Model Organisms, Cell Types & Assay Formats for {selected_disease} Primary Disease Area",
             color_discrete_sequence=px.colors.qualitative.Pastel,
             height=500,
         )
@@ -709,7 +720,7 @@ with tab3:
         fig_assay.update_layout(margin=dict(t=50, l=10, r=10, b=10))
         st.plotly_chart(fig_assay, use_container_width=True)
 
-    #    st.subheader(f"Full Screening Detail for {selected_disease} Disease Area")
+    #    st.subheader(f"Full Screening Detail for {selected_disease} Primary Disease Area")
 
     treemap_full = []
     for _, row in filtered_disease.iterrows():
@@ -717,9 +728,9 @@ with tab3:
             {
                 "Site": row["Site"],
                 "Type": row["Type"],
-                "Model organism": row["Model organism"],
-                "Cell type": row["Cell type"],
-                "Assay format": row["Assay format"],
+                "Model Organism": row["Model Organism"],
+                "Biological System": row["Biological System"],
+                "Assay Design (1)": row["Assay Design (1)"],
                 "Count": 1,
             }
         )
@@ -731,13 +742,13 @@ with tab3:
             px.Constant(selected_disease),
             "Site",
             "Type",
-            "Model organism",
-            "Cell type",
-            "Assay format",
+            "Model Organism",
+            "Biological System",
+            "Assay Design (1)",
         ],
         values="Count",
         color="Site",
-        title=f"Complete Screening Hierarchy for {selected_disease} Disease Area",
+        title=f"Complete Screening Hierarchy for {selected_disease} Primary Disease Area",
         color_discrete_sequence=px.colors.qualitative.Set2,
         height=600,
     )
