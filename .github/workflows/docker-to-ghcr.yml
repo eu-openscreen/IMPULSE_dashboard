@@ -1,9 +1,10 @@
-name: Build and publish Docker image for main branch
+name: Build and publish Docker image
 
 on:
   push:
     branches:
       - main
+      - websitev2
 
 env:
   REGISTRY: ghcr.io
@@ -29,11 +30,11 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=main-{{date 'YYYYMMDD-HHmmss' tz='Europe/Stockholm'}}
+            type=raw,value={{branch}}-{{date 'YYYYMMDD-HHmmss' tz='Europe/Stockholm'}}
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
 
