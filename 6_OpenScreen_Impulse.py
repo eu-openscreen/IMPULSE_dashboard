@@ -88,6 +88,34 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.markdown("## Why use advanced disease models?")
+
+st.markdown(
+    """
+    Many promising compounds fail in later stages of drug discovery because standard cell lines do not reflect how a disease works in patients. 
+    Advanced disease models, such as patient-derived cells, iPSC-derived cells, gene-edited cells, 3D cultures, organoids and co-cultures, 
+    reproduce disease-specific mechanisms more closely. Results from these models are more likely to predict how a compound behaves in vivo.
+    ​
+    """
+)
+
+st.markdown(
+        
+    """
+    
+    ##### EU-OPENSCREEN partner sites offer these models for several stages of a project:
+
+    - Screening: smaller primary screens in complex biological systems.
+    - Validation: confirming hits from large high-throughput campaigns in a disease-relevant setting.
+    - Profiling: testing selected compounds across several models, donors or patient samples.
+    - Mechanism of action: studying how a compound works, together with genetic and proteomic approaches.
+
+    Projects range from a few compounds profiled across many models to screens of up to 100,000 compounds. Our Partner Sites can advise on model selection, controls and assay format before you apply.​
+
+    """
+)
+
+
 # st.markdown("### Cataloging Screening")
 # st.image("images/pages/openscreen_cataloguing_screening.png")
 # st.caption("Cataloging Screening Visualized based on Site, Types and Assays.")
@@ -866,3 +894,175 @@ with tab4:
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+
+@st.fragment
+def render_who_offers_what():
+    """Show catalogue totals and a partner site by disease area grid that opens the matching models."""
+    not_specified = "Not specified"
+
+    df = pd.read_csv("data/Cataloguing screening_v2.csv")
+    df = df.dropna(subset=["Site"]).copy()
+    df["Primary Disease Area"] = (
+        df["Primary Disease Area"].str.strip().fillna(not_specified)
+    )
+
+    counts = pd.crosstab(df["Site"], df["Primary Disease Area"])
+    areas = [
+        area
+        for area in counts.sum().sort_values(ascending=False, kind="mergesort").index
+        if area != not_specified
+    ]
+    columns = areas + [not_specified] if not_specified in counts.columns else areas
+    site_totals = counts.sum(axis=1).sort_values(ascending=False, kind="mergesort")
+    area_totals = counts.sum()
+    site_countries = df.groupby("Site")["Partner Site Country"].first()
+
+    # Clicks only update session state, so this fragment reruns on its own
+    # and the rest of the page keeps its current widgets and selections.
+    def select(site, area=None):
+        st.session_state.wow_selection = (site, area)
+
+    def clear_selection():
+        st.session_state.wow_selection = None
+
+    def shade(count):
+        if count <= 2:
+            return 1
+        if count <= 5:
+            return 2
+        if count <= 10:
+            return 3
+        return 4
+
+    # st.html avoids the negative bottom margin st.markdown adds, which misaligns grid rows.
+    def centered(cell, text):
+        cell.html(f'<div class="wow-center">{text}</div>')
+
+    selection = st.session_state.get("wow_selection")
+    if selection and selection[0] not in site_totals.index:
+        selection = None
+    selected_key = ""
+    if selection:
+        row_number = site_totals.index.get_loc(selection[0])
+        if selection[1] in columns:
+            selected_key = f"wow_s{shade(counts.loc[selection]):d}_{row_number}_{columns.index(selection[1])}"
+        else:
+            selected_key = f"wow_site_{row_number}"
+
+    st.markdown(
+        f"""
+        <style>
+            .wow-tiles {{display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;}}
+            .wow-tile {{flex: 1 1 10rem; background: #DAE5F5; color: #1B3C67; padding: 1rem 1.25rem;}}
+            .wow-tile strong {{display: block; font-size: 2.25rem; font-weight: 500; line-height: 1.3;}}
+            .wow-legend {{display: flex; justify-content: flex-end; align-items: center; gap: 0.25rem; font-size: 0.8rem;}}
+            .wow-legend span {{width: 1.5rem; height: 0.75rem;}}
+            .wow-center {{text-align: center; font-size: 0.9rem;}}
+            .wow-head {{text-align: center; font-size: 0.8rem; opacity: 0.8;}}
+            .st-key-wow_grid, .st-key-wow_grid [data-testid="stHorizontalBlock"] {{gap: 2px;}}
+            .st-key-wow_grid [data-testid="stHorizontalBlock"] {{border-bottom: 1px solid rgba(128, 128, 128, 0.2);}}
+            .st-key-wow_grid button {{min-height: 2.4rem; border: none; border-radius: 0;}}
+            .st-key-wow_grid button p {{font-size: 0.9rem;}}
+            [class*="st-key-wow_site_"] button {{justify-content: flex-start;}}
+            [class*="st-key-wow_site_"] button:hover, [class*="st-key-wow_site_"] button:hover p {{color: inherit; text-decoration: underline;}}
+            [class*="st-key-wow_s"] button:hover {{filter: brightness(0.92);}}
+            .wow-shade-1, [class*="st-key-wow_s1_"] button {{background: #DAE5F5; color: #1B3C67;}}
+            .wow-shade-2, [class*="st-key-wow_s2_"] button {{background: #A9C1E1; color: #1B3C67;}}
+            .wow-shade-3, [class*="st-key-wow_s3_"] button {{background: #33527A; color: white;}}
+            .wow-shade-4, [class*="st-key-wow_s4_"] button {{background: #0E2A5C; color: white;}}
+            [class*="st-key-wow_s"] button:hover p {{color: inherit;}}
+            .st-key-{selected_key} button {{outline: 3px solid #F5A21C; outline-offset: -3px;}}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    tiles = [
+        (len(df), "models and assay set-ups"),
+        (df["Site"].nunique(), "partner sites"),
+        (df["Partner Site Country"].nunique(), "countries"),
+        (len(areas), "disease areas"),
+    ]
+    tiles_html = "".join(
+        f'<div class="wow-tile"><strong>{value}</strong>{label}</div>'
+        for value, label in tiles
+    )
+    st.markdown(f'<div class="wow-tiles">{tiles_html}</div>', unsafe_allow_html=True)
+
+    st.subheader("Who offers what")
+    st.markdown(
+        "Number of models per partner site and primary disease area. "
+        "Select a site to open its profile, or a cell to see those models."
+    )
+    legend = "".join(
+        f'<span class="wow-shade-{level}"></span>' for level in range(1, 5)
+    )
+    st.markdown(
+        f'<div class="wow-legend">Fewer&nbsp;{legend}&nbsp;More</div>',
+        unsafe_allow_html=True,
+    )
+
+    weights = [2.2] + [1] * len(columns) + [0.8]
+    with st.container(key="wow_grid"):
+        header = st.columns(weights, vertical_alignment="bottom")
+        header[0].html('<div class="wow-head" style="text-align: left">Partner site</div>')
+        for cell, label in zip(header[1:], columns + ["Total"]):
+            cell.html(f'<div class="wow-head">{label}</div>')
+
+        for row_number, (site, total) in enumerate(site_totals.items()):
+            cells = st.columns(weights, vertical_alignment="center")
+            cells[0].button(
+                f"**{site}** :gray[{site_countries[site]}]",
+                key=f"wow_site_{row_number}",
+                type="tertiary",
+                on_click=select,
+                args=(site,),
+            )
+            for column_number, (cell, column) in enumerate(zip(cells[1:], columns)):
+                count = int(counts.loc[site, column])
+                if count:
+                    cell.button(
+                        str(count),
+                        key=f"wow_s{shade(count)}_{row_number}_{column_number}",
+                        use_container_width=True,
+                        on_click=select,
+                        args=(site, column),
+                    )
+            centered(cells[-1], f"<strong>{total}</strong>")
+
+        footer = st.columns(weights, vertical_alignment="center")
+        footer[0].html("<strong>All sites</strong>")
+        for cell, column in zip(footer[1:], columns):
+            centered(cell, f"<strong>{area_totals[column]}</strong>")
+        centered(footer[-1], f"<strong>{len(df)}</strong>")
+
+    if not selection:
+        return
+
+    site, area = selection
+    selected_df = df[df["Site"] == site]
+    title = f"{site} ({site_countries[site]})"
+    if area in columns:
+        selected_df = selected_df[selected_df["Primary Disease Area"] == area]
+        title = f"{title}, {area}"
+
+    model_label = "model" if len(selected_df) == 1 else "models"
+    st.markdown(f"##### {title}: {len(selected_df)} {model_label}")
+    st.dataframe(
+        selected_df[
+            [
+                "Primary Disease Area",
+                "Type",
+                "Model Organism",
+                "Biological System",
+                "Assay Design (1)",
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
+    st.button("Clear selection", key="wow_clear", on_click=clear_selection)
+
+
+render_who_offers_what()
