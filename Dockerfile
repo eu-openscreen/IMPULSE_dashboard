@@ -26,6 +26,8 @@ COPY requirements.txt $HOME/impulse_dashboard/requirements.txt
 COPY images $HOME/impulse_dashboard/images/
 COPY data $HOME/impulse_dashboard/data/
 COPY 6_OpenScreen_Impulse.py $HOME/impulse_dashboard/6_OpenScreen_Impulse.py
+COPY app.py $HOME/impulse_dashboard/app.py
+
 # COPY Main.py $HOME/impulse_dashboard/Main.py
 # COPY kgg_utils.py $HOME/impulse_dashboard/kgg_utils.py
 COPY start-script.sh $HOME/impulse_dashboard/start-script.sh
